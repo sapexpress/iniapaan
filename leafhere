@@ -1,4 +1,4 @@
--- lead export date - 2025-10-1 00:00:00
+-- leaf export date - 2025-10-1 00:00:00
 return {
   name = "leafhere",
   hz = 20.000,

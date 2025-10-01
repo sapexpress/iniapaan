@@ -1,127 +1,43 @@
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local rootPart = character:WaitForChild("HumanoidRootPart")
 
--- Require LeafHere module from ReplicatedStorage
 local LeafHere = require(game.ReplicatedStorage:WaitForChild("LeafHere"))
+local Rayfield = require(game.ReplicatedStorage:WaitForChild("Rayfield")) -- Adjust path as needed
 
--- Create ScreenGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "AutoWalkGui"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = player:WaitForChild("PlayerGui")
-
--- Main frame
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 250, 0, 160)
-frame.Position = UDim2.new(0, 20, 0, 20)
-frame.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
-frame.BorderSizePixel = 0
-frame.Parent = screenGui
-
-local uiCorner = Instance.new("UICorner")
-uiCorner.CornerRadius = UDim.new(0, 15)
-uiCorner.Parent = frame
-
--- Title label
-local title = Instance.new("TextLabel")
-title.Text = "Auto Walk"
-title.Size = UDim2.new(1, 0, 0, 36)
-title.BackgroundTransparency = 1
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Font = Enum.Font.GothamBold
-title.TextSize = 26
-title.Parent = frame
-
--- Start Position Input
-local startPosBox = Instance.new("TextBox")
-startPosBox.PlaceholderText = "Start Position (x,y,z)"
-startPosBox.Size = UDim2.new(0.9, 0, 0, 30)
-startPosBox.Position = UDim2.new(0.05, 0, 0, 45)
-startPosBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-startPosBox.TextColor3 = Color3.new(1, 1, 1)
-startPosBox.Font = Enum.Font.Gotham
-startPosBox.TextSize = 18
-startPosBox.ClearTextOnFocus = false
-startPosBox.Parent = frame
-local startPosCorner = Instance.new("UICorner")
-startPosCorner.CornerRadius = UDim.new(0, 8)
-startPosCorner.Parent = startPosBox
-
--- End Position Input
-local endPosBox = Instance.new("TextBox")
-endPosBox.PlaceholderText = "End Position (x,y,z)"
-endPosBox.Size = UDim2.new(0.9, 0, 0, 30)
-endPosBox.Position = UDim2.new(0.05, 0, 0, 85)
-endPosBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-endPosBox.TextColor3 = Color3.new(1, 1, 1)
-endPosBox.Font = Enum.Font.Gotham
-endPosBox.TextSize = 18
-endPosBox.ClearTextOnFocus = false
-endPosBox.Parent = frame
-local endPosCorner = Instance.new("UICorner")
-endPosCorner.CornerRadius = UDim.new(0, 8)
-endPosCorner.Parent = endPosBox
-
--- Start Walk Button
-local startButton = Instance.new("TextButton")
-startButton.Text = "Start Walk"
-startButton.Size = UDim2.new(0.4, 0, 0, 34)
-startButton.Position = UDim2.new(0.05, 0, 0, 125)
-startButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-startButton.TextColor3 = Color3.new(1, 1, 1)
-startButton.Font = Enum.Font.GothamBold
-startButton.TextSize = 20
-startButton.AutoButtonColor = true
-startButton.Parent = frame
-local startUICorner = Instance.new("UICorner")
-startUICorner.CornerRadius = UDim.new(0, 10)
-startUICorner.Parent = startButton
-
--- Stop Walk Button
-local stopButton = Instance.new("TextButton")
-stopButton.Text = "Stop Walk"
-stopButton.Size = UDim2.new(0.4, 0, 0, 34)
-stopButton.Position = UDim2.new(0.55, 0, 0, 125)
-stopButton.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
-stopButton.TextColor3 = Color3.new(1, 1, 1)
-stopButton.Font = Enum.Font.GothamBold
-stopButton.TextSize = 20
-stopButton.AutoButtonColor = true
-stopButton.Parent = frame
-local stopUICorner = Instance.new("UICorner")
-stopUICorner.CornerRadius = UDim.new(0, 10)
-stopUICorner.Parent = stopButton
+-- Create Rayfield Window
+local Window = Rayfield:CreateWindow({
+    Name = "Auto Walk",
+    LoadingTitle = "Loading Auto Walk",
+    LoadingSubtitle = "by ChatGPT",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = nil,
+        FileName = "AutoWalkConfig"
+    },
+    Discord = {
+        Enabled = false,
+    },
+    KeySystem = false,
+})
 
 -- Variables
 local isWalking = false
-local currentIndex = 1
 local pathPoints = {}
 
--- Helper to parse Vector3 from "x,y,z" string
-local function parseVector3(input)
-    local x, y, z = input:match("([^,]+),([^,]+),([^,]+)")
-    if x and y and z then
-        return Vector3.new(tonumber(t), tonumber(x), tonumber(y), tonumber(z), tonumber(yaw))
-    end
-    return nil
-end
-
--- Walking function along points
+-- Function to walk path
 local function walkPath(points)
     if #points == 0 then return end
     isWalking = true
-    currentIndex = 1
+    local currentIndex = 1
 
     while isWalking and currentIndex <= #points do
         local target = points[currentIndex]
         humanoid:MoveTo(target)
-
         local reached = false
+
         local conn
         conn = humanoid.MoveToFinished:Connect(function(success)
             if success then
@@ -146,33 +62,69 @@ local function walkPath(points)
     isWalking = false
 end
 
--- Start Button logic
-startButton.MouseButton1Click:Connect(function()
-    if isWalking then return end
+-- UI Elements
 
-    local startPos = parseVector3(startPosBox.Text)
-    local endPos = parseVector3(endPosBox.Text)
+local startPosInput
+local endPosInput
 
-    if not startPos or not endPos then
-        warn("Invalid input format! Use x,y,z")
-        return
+-- Start Walk button
+Window:CreateInput({
+    Name = "Start Position (x,y,z)",
+    PlaceholderText = "e.g. 0,5,0",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(value)
+        startPosInput = value
     end
+})
 
-    local success, path = pcall(function()
-        return LeafHere.findPath(startPos, endPos)
-    end)
-
-    if not success or not path or #path == 0 then
-        warn("Failed to find path")
-        return
+Window:CreateInput({
+    Name = "End Position (x,y,z)",
+    PlaceholderText = "e.g. 10,5,10",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(value)
+        endPosInput = value
     end
+})
 
-    pathPoints = path
-    walkPath(pathPoints)
-end)
+Window:CreateButton({
+    Name = "Start Walk",
+    Callback = function()
+        if isWalking then return end
 
--- Stop Button logic
-stopButton.MouseButton1Click:Connect(function()
-    isWalking = false
-    humanoid:MoveTo(rootPart.Position) -- Stop movement immediately
-end)
+        local function parseVec3(input)
+            local x, y, z = input:match("([^,]+),([^,]+),([^,]+)")
+            if x and y and z then
+                return Vector3.new(tonumber(x), tonumber(y), tonumber(z))
+            end
+            return nil
+        end
+
+        local startPos = parseVec3(startPosInput or "")
+        local endPos = parseVec3(endPosInput or "")
+
+        if not startPos or not endPos then
+            warn("Invalid input format! Use x,y,z")
+            return
+        end
+
+        local success, path = pcall(function()
+            return LeafHere.findPath(startPos, endPos)
+        end)
+
+        if not success or not path or #path == 0 then
+            warn("Failed to find path")
+            return
+        end
+
+        pathPoints = path
+        walkPath(pathPoints)
+    end
+})
+
+Window:CreateButton({
+    Name = "Stop Walk",
+    Callback = function()
+        isWalking = false
+        humanoid:MoveTo(rootPart.Position)
+    end
+})

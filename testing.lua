@@ -1,51 +1,77 @@
--- LocalScript (e.g., StarterPlayerScripts)
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local rootPart = character:WaitForChild("HumanoidRootPart")
 
--- Require LeafHere module
+-- Require LeafHere module from ReplicatedStorage
 local LeafHere = require(game.ReplicatedStorage:WaitForChild("LeafHere"))
 
--- Create GUI
+-- Create ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "AutoWalkGui"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
+-- Main frame
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 120)
+frame.Size = UDim2.new(0, 250, 0, 160)
 frame.Position = UDim2.new(0, 20, 0, 20)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
 frame.BorderSizePixel = 0
 frame.Parent = screenGui
-frame.AnchorPoint = Vector2.new(0, 0)
-frame.BackgroundTransparency = 0.1
-frame.ClipsDescendants = true
 
 local uiCorner = Instance.new("UICorner")
-uiCorner.CornerRadius = UDim.new(0, 12)
+uiCorner.CornerRadius = UDim.new(0, 15)
 uiCorner.Parent = frame
 
+-- Title label
 local title = Instance.new("TextLabel")
 title.Text = "Auto Walk"
-title.Size = UDim2.new(1, 0, 0, 30)
+title.Size = UDim2.new(1, 0, 0, 36)
 title.BackgroundTransparency = 1
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.GothamBold
-title.TextSize = 22
+title.TextSize = 26
 title.Parent = frame
 
--- Start Button
+-- Start Position Input
+local startPosBox = Instance.new("TextBox")
+startPosBox.PlaceholderText = "Start Position (x,y,z)"
+startPosBox.Size = UDim2.new(0.9, 0, 0, 30)
+startPosBox.Position = UDim2.new(0.05, 0, 0, 45)
+startPosBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+startPosBox.TextColor3 = Color3.new(1, 1, 1)
+startPosBox.Font = Enum.Font.Gotham
+startPosBox.TextSize = 18
+startPosBox.ClearTextOnFocus = false
+startPosBox.Parent = frame
+local startPosCorner = Instance.new("UICorner")
+startPosCorner.CornerRadius = UDim.new(0, 8)
+startPosCorner.Parent = startPosBox
+
+-- End Position Input
+local endPosBox = Instance.new("TextBox")
+endPosBox.PlaceholderText = "End Position (x,y,z)"
+endPosBox.Size = UDim2.new(0.9, 0, 0, 30)
+endPosBox.Position = UDim2.new(0.05, 0, 0, 85)
+endPosBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+endPosBox.TextColor3 = Color3.new(1, 1, 1)
+endPosBox.Font = Enum.Font.Gotham
+endPosBox.TextSize = 18
+endPosBox.ClearTextOnFocus = false
+endPosBox.Parent = frame
+local endPosCorner = Instance.new("UICorner")
+endPosCorner.CornerRadius = UDim.new(0, 8)
+endPosCorner.Parent = endPosBox
+
+-- Start Walk Button
 local startButton = Instance.new("TextButton")
 startButton.Text = "Start Walk"
-startButton.Size = UDim2.new(0.8, 0, 0, 40)
-startButton.Position = UDim2.new(0.1, 0, 0, 40)
+startButton.Size = UDim2.new(0.4, 0, 0, 34)
+startButton.Position = UDim2.new(0.05, 0, 0, 125)
 startButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
 startButton.TextColor3 = Color3.new(1, 1, 1)
 startButton.Font = Enum.Font.GothamBold
@@ -53,14 +79,14 @@ startButton.TextSize = 20
 startButton.AutoButtonColor = true
 startButton.Parent = frame
 local startUICorner = Instance.new("UICorner")
-startUICorner.CornerRadius = UDim.new(0, 8)
+startUICorner.CornerRadius = UDim.new(0, 10)
 startUICorner.Parent = startButton
 
--- Stop Button
+-- Stop Walk Button
 local stopButton = Instance.new("TextButton")
 stopButton.Text = "Stop Walk"
-stopButton.Size = UDim2.new(0.8, 0, 0, 40)
-stopButton.Position = UDim2.new(0.1, 0, 0, 90)
+stopButton.Size = UDim2.new(0.4, 0, 0, 34)
+stopButton.Position = UDim2.new(0.55, 0, 0, 125)
 stopButton.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
 stopButton.TextColor3 = Color3.new(1, 1, 1)
 stopButton.Font = Enum.Font.GothamBold
@@ -68,77 +94,84 @@ stopButton.TextSize = 20
 stopButton.AutoButtonColor = true
 stopButton.Parent = frame
 local stopUICorner = Instance.new("UICorner")
-stopUICorner.CornerRadius = UDim.new(0, 8)
+stopUICorner.CornerRadius = UDim.new(0, 10)
 stopUICorner.Parent = stopButton
 
--- Variables for walking
+-- Variables
 local isWalking = false
-local pathPoints = {}
 local currentIndex = 1
-local walkSpeed = 16 -- default walk speed
+local pathPoints = {}
 
--- Function to parse path with LeafHere and get waypoints
--- Here you need to customize input for LeafHere usage based on actual API of the module.
-local function getPathPoints()
-    -- Example: LeafHere.parsePath returns array of Vector3 points
-    -- Replace this with actual usage according to LeafHere module
-    local path = LeafHere.parsePath()  -- You must implement or adapt this function with the actual module usage
-    return path or {}
+-- Helper to parse Vector3 from "x,y,z" string
+local function parseVector3(input)
+    local x, y, z = input:match("([^,]+),([^,]+),([^,]+)")
+    if x and y and z then
+        return Vector3.new(tonumber(t), tonumber(x), tonumber(y), tonumber(z), tonumber(yaw))
+    end
+    return nil
 end
 
--- Function to move character along path points smoothly
-local function walkAlongPath(points)
+-- Walking function along points
+local function walkPath(points)
     if #points == 0 then return end
-    currentIndex = 1
     isWalking = true
+    currentIndex = 1
 
     while isWalking and currentIndex <= #points do
-        local targetPos = points[currentIndex]
-        -- Move humanoid to target position using MoveTo
-        humanoid:MoveTo(targetPos)
+        local target = points[currentIndex]
+        humanoid:MoveTo(target)
 
-        -- Wait until reached close to target or stopped
         local reached = false
-        local connection
-        connection = humanoid.MoveToFinished:Connect(function(reachedSuccess)
-            if reachedSuccess then
+        local conn
+        conn = humanoid.MoveToFinished:Connect(function(success)
+            if success then
                 reached = true
             end
         end)
 
-        -- Wait loop with small delay to check reach or stop
         while isWalking and not reached do
-            local dist = (rootPart.Position - targetPos).Magnitude
+            local dist = (rootPart.Position - target).Magnitude
             if dist < 3 then
                 reached = true
             end
             wait(0.1)
         end
 
-        connection:Disconnect()
+        conn:Disconnect()
 
-        if not isWalking then
-            break
-        end
-
+        if not isWalking then break end
         currentIndex = currentIndex + 1
     end
 
     isWalking = false
 end
 
--- Start button click
+-- Start Button logic
 startButton.MouseButton1Click:Connect(function()
     if isWalking then return end
-    pathPoints = getPathPoints()
-    if #pathPoints == 0 then
-        warn("No path points found")
+
+    local startPos = parseVector3(startPosBox.Text)
+    local endPos = parseVector3(endPosBox.Text)
+
+    if not startPos or not endPos then
+        warn("Invalid input format! Use x,y,z")
         return
     end
-    walkAlongPath(pathPoints)
+
+    local success, path = pcall(function()
+        return LeafHere.findPath(startPos, endPos)
+    end)
+
+    if not success or not path or #path == 0 then
+        warn("Failed to find path")
+        return
+    end
+
+    pathPoints = path
+    walkPath(pathPoints)
 end)
 
--- Stop button click
+-- Stop Button logic
 stopButton.MouseButton1Click:Connect(function()
     isWalking = false
     humanoid:MoveTo(rootPart.Position) -- Stop movement immediately

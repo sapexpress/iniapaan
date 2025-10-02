@@ -5,15 +5,18 @@ local Library = loadstring(game:HttpGet('https://gist.githubusercontent.com/MjCo
 local window = Library:Window('Example UI')
 
 -- Create tabs with icons replace ur own icon id
-local mainTab = window:Tab({"Crafting", "rbxassetid://7734022041"})
-local localTab = window:Tab({"LocalPlayer", "rbxassetid://7743875962"})
-local settingsTab = window:Tab({"Reward", "rbxassetid://7733673987"})
+local AutoWalkTab = Window:Tab({Title = "Auto Walk", Icon = "star"})
+local MainTab = Window:Tab({Title = "Player", Icon = "user"})
+local VisualTab = Window:Tab({Title = "Visual", Icon = "sun"})
+local ProteksiTab = Window:Tab({Title = "Proteksi", Icon = "shield"})
+local MiscTab = Window:Tab({Title = "Misc", Icon = "settings"})
+local SocialTab = Window:Tab({Title = "Social", Icon = "link"})
 
 -- Main Tab Elements
-mainTab:Label("Welcome to the UI Library!")
+MainTab:Label("Welcome to the UI Library!")
 
 -- Button
-mainTab:Button('Click Me!', function()
+MainTab:Button('Click Me!', function()
     print("Button clicked!")
     game.StarterGui:SetCore("SendNotification", {
         Title = "Notification";
@@ -23,12 +26,12 @@ mainTab:Button('Click Me!', function()
 end)
 
 -- Toggle
-mainTab:Toggle('Auto Clicker', false, function(state)
+MainTab:Toggle('Auto Clicker', false, function(state)
     print("Auto Clicker is now:", state and "ON" or "OFF")
 end)
 
 -- Slider
-mainTab:Slider("Walk Speed", 16, 100, 16, function(value)
+MainTab:Slider("Walk Speed", 16, 100, 16, function(value)
     print("Walk Speed set to:", value)
     game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
 end)

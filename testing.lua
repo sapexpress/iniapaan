@@ -2,15 +2,15 @@
 local Library = loadstring(game:HttpGet('https://gist.githubusercontent.com/MjContiga1/5b9535166d60560ac884a871cb0dc418/raw/e7fdb16802d9486d8d04d3e41d3607d89e6b4a1b/Libsuck.lua'))()
 
 -- Create main window
-local Window = Library:Window('Example UI')
+local window = Library:Window('Example UI')
 
 -- Create tabs with icons replace ur own icon id
-local AutoWalkTab = Window:Tab({Title = "Auto Walk", Icon = "star"})
-local MainTab = Window:Tab({Title = "Player", Icon = "user"})
-local VisualTab = Window:Tab({Title = "Visual", Icon = "sun"})
-local ProteksiTab = Window:Tab({Title = "Proteksi", Icon = "shield"})
-local MiscTab = Window:Tab({Title = "Misc", Icon = "settings"})
-local SocialTab = Window:Tab({Title = "Social", Icon = "link"})
+local AutoWalkTab = window:Tab({Title = "Auto Walk", Icon = "star"})
+local MainTab = window:Tab({Title = "Player", Icon = "user"})
+local VisualTab = window:Tab({Title = "Visual", Icon = "sun"})
+local ProteksiTab = window:Tab({Title = "Proteksi", Icon = "shield"})
+local MiscTab = window:Tab({Title = "Misc", Icon = "settings"})
+local SocialTab = window:Tab({Title = "Social", Icon = "link"})
 
 -- Main Tab Elements
 MainTab:Label("Welcome to the UI Library!")

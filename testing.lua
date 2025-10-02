@@ -2,15 +2,28 @@
 local Library = loadstring(game:HttpGet('https://gist.githubusercontent.com/MjContiga1/5b9535166d60560ac884a871cb0dc418/raw/e7fdb16802d9486d8d04d3e41d3607d89e6b4a1b/Libsuck.lua'))()
 
 -- Create main window
-local window = Library:Window('Example UI')
+local Window = Library:Window({
+        Title = "Eryx Hub",
+        Desc = "Version 3.2 (Atin Separated)",
+        Icon = 105059922903197,
+        Theme = "Dark",
+        Config = {
+            Keybind = Enum.KeyCode.LeftControl,
+            Size = UDim2.new(0, 500, 0, 400)
+        },
+        CloseUIButton = {
+            Enabled = true,
+            Text = "Eryx Hub"
+        }
+    })
 
 -- Create tabs with icons replace ur own icon id
-local AutoWalkTab = window:Tab({"✡ Auto Walk", Icon = "star"})
-local MainTab = window:Tab({"⚠ Player", "https://share.google/ZBctqPQaRVwP0yzGs"})
-local VisualTab = window:Tab({"♻ Visual", Icon = "sun"})
-local ProteksiTab = window:Tab({"🛡 Protection", Icon = "shield"})
-local MiscTab = window:Tab({"☸  Misc", Icon = "settings"})
-local SocialTab = window:Tab({"☢ Social", "link"})
+local AutoWalkTab = window:Tab({"▶ Auto Walk"})
+local MainTab = window:Tab({"▶ Player"})
+local VisualTab = window:Tab({"▶ Visual"})
+local ProteksiTab = window:Tab({"▶ Protection"})
+local MiscTab = window:Tab({"▶ Misc"})
+local SocialTab = window:Tab({"▶ Social"})
 
 -- Main Tab Elements
 MainTab:Label("Welcome to the UI Library!")

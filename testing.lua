@@ -48,3 +48,4 @@ local MiscTab = Window:Tab({"▶ Misc"})
 local SocialTab = Window:Tab({"▶ Social"})
 
 -- Main Tab Elements
+Rayfield:LoadConfiguration()

@@ -3,7 +3,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
    Name = "SAP Express Mountain Hub",
-   Icon = "7733960981", -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   Icon = 7733960981, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
    LoadingTitle = "Mountain Script",
    LoadingSubtitle = "by SAP Exrpress",
    ShowText = "SAP Ex", -- for mobile users to unhide rayfield, change if you'd like

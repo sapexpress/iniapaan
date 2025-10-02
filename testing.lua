@@ -40,12 +40,12 @@ local Window = Rayfield:CreateWindow({
 
 
 -- Create tabs with icons replace ur own icon id
-local AutoWalkTab = Window:CreateTab({"▶ Auto Walk"})
-local MainTab = Window:CreateTab({"▶ Player"})
-local VisualTab = Window:CreateTab({"▶ Visual"})
-local ProteksiTab = Window:CreateTab({"▶ Protection"})
-local MiscTab = Window:CreateTab({"▶ Misc"})
-local SocialTab = Window:CreateTab({"▶ Social"})
+local AutoWalkTab = Window:CreateTab("▶ Auto Walk")
+local MainTab = Window:CreateTab("▶ Player")
+local VisualTab = Window:CreateTab("▶ Visual")
+local ProteksiTab = Window:CreateTab("▶ Protection")
+local MiscTab = Window:CreateTab("▶ Misc")
+local SocialTab = Window:CreateTab("▶ Social")
 
 -- Main Tab Elements
 Rayfield:LoadConfiguration()

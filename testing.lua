@@ -2,7 +2,7 @@
 local Library = loadstring(game:HttpGet('https://gist.githubusercontent.com/MjContiga1/5b9535166d60560ac884a871cb0dc418/raw/e7fdb16802d9486d8d04d3e41d3607d89e6b4a1b/Libsuck.lua'))()
 
 -- Create main window
-local window = Library:Window('Example UI')
+local Window = Library:Window('Example UI')
 
 -- Create tabs with icons replace ur own icon id
 local AutoWalkTab = Window:Tab({Title = "Auto Walk", Icon = "star"})

@@ -5,12 +5,12 @@ local Library = loadstring(game:HttpGet('https://gist.githubusercontent.com/MjCo
 local window = Library:Window('Example UI')
 
 -- Create tabs with icons replace ur own icon id
-local AutoWalkTab = window:Tab({"Auto Walk", Icon = "star"})
-local MainTab = window:Tab({"Player", "https://share.google/ZBctqPQaRVwP0yzGs"})
-local VisualTab = window:Tab({"Visual", Icon = "sun"})
-local ProteksiTab = window:Tab({"Protection", Icon = "shield"})
-local MiscTab = window:Tab({"Misc", Icon = "settings"})
-local SocialTab = window:Tab({"Social", "link"})
+local AutoWalkTab = window:Tab({"✡ Auto Walk", Icon = "star"})
+local MainTab = window:Tab({"⚠ Player", "https://share.google/ZBctqPQaRVwP0yzGs"})
+local VisualTab = window:Tab({"♻ Visual", Icon = "sun"})
+local ProteksiTab = window:Tab({"🛡 Protection", Icon = "shield"})
+local MiscTab = window:Tab({"☸  Misc", Icon = "settings"})
+local SocialTab = window:Tab({"☢ Social", "link"})
 
 -- Main Tab Elements
 MainTab:Label("Welcome to the UI Library!")

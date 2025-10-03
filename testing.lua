@@ -2,11 +2,11 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Rayfield Example Window",
+   Name = "SAP Express Hub Mountain Helper",
    Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "Rayfield Interface Suite",
-   LoadingSubtitle = "by Sirius",
-   ShowText = "Rayfield", -- for mobile users to unhide rayfield, change if you'd like
+   LoadingTitle = "Mountain Helper",
+   LoadingSubtitle = "by SAP Express",
+   ShowText = "Express", -- for mobile users to unhide rayfield, change if you'd like
    Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
    ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
@@ -43,8 +43,8 @@ local Window = Rayfield:CreateWindow({
 local walkTab = Window:CreateTab("Auto Walk", "star")
 local MainSection = walkTab:CreateSection("Main")
 local Toggle = walkTab:CreateToggle({Name = "Infinite Jump", CurrentValue = false, Callback = function(v) if v then UserInputService.JumpRequest:Connect(function() if humanoid then humanoid:ChangeState(Enum.HumanoidStateType.Jumping) end end) end end})
-local Slider = walkTab:CreateSlider({Name = "WalkSpeed", Range = {0, 100}, Increment = 1, Suffix = "Speed", CurrentValue = 16, Flag = "sliderjp", Callback = function(val) if humanoid then humanoid.WalkSpeed = val end end})
-local Slider = walkTab:CreateSlider({Name = "JumpPower", Range = {0, 300}, CurrentValue = 50, Callback = function(val) if humanoid then humanoid.JumpPower = val; humanoid.UseJumpPower = true end end})
+local Slider = walkTab:CreateSlider({Name = "WalkSpeed", Range = {0, 100}, Increment = 1, Suffix = "Speed", CurrentValue = 16, Flag = "sliderjp", Callback = function(val) game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = (val) end, })
+local Slider = walkTab:CreateSlider({Name = "JumpPower", Range = {0, 300}, Increment = 1, Suffix = "Speed", CurrentValue = 50, Flag = "sliderjp", Callback = function(val) game.Players.LocalPlayer.Character.Humanoid.JumpPower = (val) end, })
 --local MainTab = Window:CreateTab("Player". "user")
 --local VisualTab = Window:CreateTab("Visual", "sun")
 --local ProteksiTab = Window:CreateTab("Protection", "shield")

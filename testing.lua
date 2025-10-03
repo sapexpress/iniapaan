@@ -1,6 +1,26 @@
 -- Load the UI library
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local TeleportService = game:GetService("TeleportService")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+local humanoid, rootPart
+
+local function setupCharacter(char)
+   humanoid = char:WaitForChild("Humanoid")
+   rootPart = char:WaitForChild("HumanoidRootPart")
+end
+   
+if LocalPlayer.Character then
+   setupCharacter(LocalPlayer.Character)
+end
+LocalPlayer.CharacterAdded:Connect(setupCharacter)
+
+
 local Window = Rayfield:CreateWindow({
    Name = "SAP Express Hub Mountain Helper",
    Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
@@ -40,11 +60,13 @@ local Window = Rayfield:CreateWindow({
 
 
 -- Create tabs with icons replace ur own icon id
-local walkTab = Window:CreateTab("Auto Walk", "star")
+local user = Window:CreateTab("Auto Walk", "star")
 local MainSection = walkTab:CreateSection("Main")
-local Toggle = walkTab:CreateToggle({Name = "Infinite Jump", CurrentValue = false, Callback = function(v) if v then UserInputService.JumpRequest:Connect(function() if humanoid then humanoid:ChangeState(Enum.HumanoidStateType.Jumping) end end) end end})
-local Slider = walkTab:CreateSlider({Name = "WalkSpeed", Range = {0, 100}, Increment = 1, Suffix = "Speed", CurrentValue = 16, Flag = "sliderjp", Callback = function(val) game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = (val) end, })
-local Slider = walkTab:CreateSlider({Name = "JumpPower", Range = {0, 300}, Increment = 1, Suffix = "Speed", CurrentValue = 50, Flag = "sliderjp", Callback = function(val) game.Players.LocalPlayer.Character.Humanoid.JumpPower = (val) end, })
+local Toggle = userTab:CreateToggle({Name = "Infinite Jump", CurrentValue = false, Callback = function(v) if v then UserInputService.JumpRequest:Connect(function() if humanoid then humanoid:ChangeState(Enum.HumanoidStateType.Jumping) end end) end end})
+local Slider = userTab:CreateSlider({Name = "WalkSpeed", Range = {0, 100}, Increment = 1, Suffix = "Speed", CurrentValue = 16, Flag = "sliderjp", Callback = function(val) game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = (val) end, })
+local Slider = userTab:CreateSlider({Name = "JumpPower", Range = {0, 300}, Increment = 1, Suffix = "Speed", CurrentValue = 50, Flag = "sliderjp", Callback = function(val) game.Players.LocalPlayer.Character.Humanoid.JumpPower = (val) end, })
+local Input = userTab:CreateInput({Name = " WalkSpeed", Range = {0-100}, PlaceholderText = "0-100", RemoveTextAfterFocusLost = false, Callback = function(Text) game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = (Text) end, })
+local Input = userTab:CreateInput({Name = " JumpPower", Range = {0-300}, PlaceholderText = "0-300", RemoveTextAfterFocusLost = false, Callback = function(Text) game.Players.LocalPlayer.Character.Humanoid.JumpPower = (Text) end, })
 --local MainTab = Window:CreateTab("Player". "user")
 --local VisualTab = Window:CreateTab("Visual", "sun")
 --local ProteksiTab = Window:CreateTab("Protection", "shield")

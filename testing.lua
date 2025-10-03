@@ -42,9 +42,9 @@ local Window = Rayfield:CreateWindow({
 -- Create tabs with icons replace ur own icon id
 local GoodTab = Window:CreateTab("Auto Walk", "star")
 local MainSection = Goodtab:CreateSection("Main")
-GoodTab:Toggle({Title = "Infinite Jump", Value = false, Callback = function(v) if v then UserInputService.JumpRequest:Connect(function() if humanoid then humanoid:ChangeState(Enum.HumanoidStateType.Jumping) end end) end end})
-GoodTab:Slider({Title = "WalkSpeed", Min = 0, Max = 100, Value = 16, Callback = function(val) if humanoid then humanoid.WalkSpeed = val end end})
-GoodTab:Slider({Title = "JumpPower", Min = 0, Max = 300, Value = 50, Callback = function(val) if humanoid then humanoid.JumpPower = val; humanoid.UseJumpPower = true end end})
+local Toggle = GoodTab:CreateToggle({Name = "Infinite Jump", CurrentValue = false, Callback = function(v) if v then UserInputService.JumpRequest:Connect(function() if humanoid then humanoid:ChangeState(Enum.HumanoidStateType.Jumping) end end) end end})
+local Slider = GoodTab:CreateSlider({Name = "WalkSpeed", Range = {0, 100}, CurrentValue = 16, Callback = function(val) if humanoid then humanoid.WalkSpeed = val end end})
+local Slider = GoodTab:CreateSlider({Name = "JumpPower", Range = {0, 300}, CurrentValue = 50, Callback = function(val) if humanoid then humanoid.JumpPower = val; humanoid.UseJumpPower = true end end})
 --local MainTab = Window:CreateTab("Player". "user")
 --local VisualTab = Window:CreateTab("Visual", "sun")
 --local ProteksiTab = Window:CreateTab("Protection", "shield")

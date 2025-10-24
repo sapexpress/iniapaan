@@ -1,61 +1,23 @@
---[[ 
-🏔️ AUTO WALK MOUNT SMOOTH v2
-Fitur:
-- Gerakan smooth menggunakan TweenService
-- GUI Start/Stop dan Speed Control (x1, x2, x3)
-- Bisa digunakan untuk karakter atau mount (seat vehicle)
-]]
+1--// AUTO WALK TWEEN SERVICE + GUI CONTROL
+--// by ChatGPT (GPT-5)
 
--- ====== SETUP ======
-local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-
+local Players = game:GetService("Players")
 local player = Players.LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
-local hrp = char:WaitForChild("HumanoidRootPart")
-local humanoid = char:WaitForChild("Humanoid")
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local root = character:WaitForChild("HumanoidRootPart")
 
--- ====== GUI ======
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "AutoWalkSmooth"
+--==============================
+-- CONFIG
+--==============================
+local WalkSpeed = 16
+local isWalking = false
+local isMinimized = false
+local LoopPath = false
 
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 200, 0, 130)
-frame.Position = UDim2.new(0.5, -100, 0.8, -65)
-frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-frame.Active = true
-frame.Draggable = true
-frame.BorderSizePixel = 0
-frame.BackgroundTransparency = 0.15
-
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, 0, 0, 25)
-title.BackgroundTransparency = 1
-title.Text = "🏃 Auto Walk Mount"
-title.TextColor3 = Color3.new(1,1,1)
-title.Font = Enum.Font.SourceSansBold
-title.TextSize = 18
-
-local startBtn = Instance.new("TextButton", frame)
-startBtn.Size = UDim2.new(1, -20, 0, 30)
-startBtn.Position = UDim2.new(0, 10, 0, 35)
-startBtn.Text = "▶ Start"
-startBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
-startBtn.TextColor3 = Color3.new(1,1,1)
-startBtn.Font = Enum.Font.SourceSansBold
-startBtn.TextSize = 16
-
-local speedBtn = Instance.new("TextButton", frame)
-speedBtn.Size = UDim2.new(1, -20, 0, 30)
-speedBtn.Position = UDim2.new(0, 10, 0, 75)
-speedBtn.Text = "Speed x1"
-speedBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 200)
-speedBtn.TextColor3 = Color3.new(1,1,1)
-speedBtn.Font = Enum.Font.SourceSansBold
-speedBtn.TextSize = 16
-
--- ====== CONFIG PATH ======
-local Path = {
+-- Path CFrame (ganti sesuai rute kamu)
+local path = {
 	CFrame.new(-955.338256835938, 171.881652832031, 890.158752441406) * CFrame.Angles(1.00199002872614e-07, -0.284080892801285, 2.65458233172922e-08),
 	CFrame.new(-955.338256835938, 171.881652832031, 890.158752441406) * CFrame.Angles(8.92665408258608e-09, -0.284080892801285, 2.36491493055269e-09),
 	CFrame.new(-955.338256835938, 171.881652832031, 890.158752441406) * CFrame.Angles(-6.6954953581444e-08, -0.284080892801285, -1.77385306443512e-08),
@@ -680,69 +642,172 @@ local Path = {
 	CFrame.new(-416.908752441406, 251.048553466797, 788.10693359375) * CFrame.Angles(-4.79625157367991e-08, -3.12587141990662, -1.86541129210127e-08)
 }
 
-local speedMultiplier = 1
-local walking = false
+--==============================
+-- GUI SETUP
+--==============================
+local gui = Instance.new("ScreenGui")
+gui.Name = "AutoWalkUI"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
 
--- ====== FUNGSI ======
-local function tweenToCFrame(targetCFrame)
-	local distance = (hrp.Position - targetCFrame.Position).Magnitude
-	local baseSpeed = 16 -- kecepatan dasar lari humanoid
-	local duration = (distance / baseSpeed) / speedMultiplier
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 160)
+frame.Position = UDim2.new(0, 50, 0, 100)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.Active = true
+frame.Draggable = true
+frame.Parent = gui
 
-	local tween = TweenService:Create(hrp, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
-		CFrame = targetCFrame
-	})
+local uicorner = Instance.new("UICorner", frame)
+uicorner.CornerRadius = UDim.new(0, 10)
+
+-- Title bar
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, -60, 0, 30)
+title.Position = UDim2.new(0, 10, 0, 5)
+title.BackgroundTransparency = 1
+title.Text = "🏃 Auto Walk"
+title.TextColor3 = Color3.new(1,1,1)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 16
+title.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Minimize button
+local minimize = Instance.new("TextButton", frame)
+minimize.Size = UDim2.new(0, 25, 0, 25)
+minimize.Position = UDim2.new(1, -55, 0, 3)
+minimize.Text = "_"
+minimize.Font = Enum.Font.GothamBold
+minimize.TextSize = 18
+minimize.TextColor3 = Color3.fromRGB(255,255,255)
+minimize.BackgroundTransparency = 1
+
+-- Close button
+local close = Instance.new("TextButton", frame)
+close.Size = UDim2.new(0, 25, 0, 25)
+close.Position = UDim2.new(1, -30, 0, 3)
+close.Text = "X"
+close.Font = Enum.Font.GothamBold
+close.TextSize = 18
+close.TextColor3 = Color3.fromRGB(255,100,100)
+close.BackgroundTransparency = 1
+
+-- Start button
+local startBtn = Instance.new("TextButton", frame)
+startBtn.Size = UDim2.new(0, 180, 0, 35)
+startBtn.Position = UDim2.new(0, 10, 0, 45)
+startBtn.Text = "▶️ Start"
+startBtn.Font = Enum.Font.GothamBold
+startBtn.TextSize = 18
+startBtn.BackgroundColor3 = Color3.fromRGB(60, 180, 75)
+startBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", startBtn).CornerRadius = UDim.new(0, 8)
+
+-- Speed buttons
+local speeds = {"x1", "x2", "x3"}
+local speedButtons = {}
+for i, label in ipairs(speeds) do
+	local btn = Instance.new("TextButton", frame)
+	btn.Size = UDim2.new(0, 55, 0, 30)
+	btn.Position = UDim2.new(0, 10 + (i-1)*60, 0, 95)
+	btn.Text = label
+	btn.Font = Enum.Font.Gotham
+	btn.TextSize = 16
+	btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+	btn.TextColor3 = Color3.new(1,1,1)
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+	speedButtons[label] = btn
+end
+
+--==============================
+-- FUNCTIONS
+--==============================
+local function tweenTo(targetCFrame)
+	local distance = (root.Position - targetCFrame.Position).Magnitude
+	local time = distance / WalkSpeed
+	
+	local tweenInfo = TweenInfo.new(time, Enum.EasingStyle.Linear)
+	local tween = TweenService:Create(root, tweenInfo, {CFrame = targetCFrame})
 	tween:Play()
-	return tween
+	tween.Completed:Wait()
 end
 
-local function startWalking()
-	walking = true
-	startBtn.Text = "⏹ Stop"
-	startBtn.BackgroundColor3 = Color3.fromRGB(180, 60, 60)
-
-	humanoid:Move(Vector3.new(), false) -- pastikan idle dulu
-	humanoid.WalkSpeed = 16 * speedMultiplier
-
-	for i, target in ipairs(Path) do
-		if not walking then break end
-
-		-- Arahkan karakter ke target
-		local lookAt = CFrame.new(hrp.Position, target.Position)
-		hrp.CFrame = CFrame.new(hrp.Position, lookAt.LookVector * 1000)
-
-		local tween = tweenToCFrame(target)
-		tween.Completed:Wait()
-
-		task.wait(0.1)
-	end
-
-	walking = false
-	startBtn.Text = "▶ Start"
-	startBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+local function startWalk()
+	if isWalking then return end
+	isWalking = true
+	startBtn.Text = "⏸️ Stop"
+	startBtn.BackgroundColor3 = Color3.fromRGB(200, 80, 80)
+	
+	task.spawn(function()
+		repeat
+			for _, cf in ipairs(path) do
+				if not isWalking then break end
+				tweenTo(cf)
+				task.wait(0.3)
+			end
+		until not isWalking or not LoopPath
+		isWalking = false
+		startBtn.Text = "▶️ Start"
+		startBtn.BackgroundColor3 = Color3.fromRGB(60, 180, 75)
+	end)
 end
 
--- ====== BUTTON EVENTS ======
-speedBtn.MouseButton1Click:Connect(function()
-	if speedMultiplier == 1 then
-		speedMultiplier = 2
-		speedBtn.Text = "Speed x2"
-	elseif speedMultiplier == 2 then
-		speedMultiplier = 3
-		speedBtn.Text = "Speed x3"
-	else
-		speedMultiplier = 1
-		speedBtn.Text = "Speed x1"
-	end
-	humanoid.WalkSpeed = 16 * speedMultiplier
-end)
+local function stopWalk()
+	isWalking = false
+end
 
+--==============================
+-- BUTTON CONNECTIONS
+--==============================
 startBtn.MouseButton1Click:Connect(function()
-	if walking then
-		walking = false
-		startBtn.Text = "▶ Start"
-		startBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+	if isWalking then
+		stopWalk()
 	else
-		task.spawn(startWalking)
+		startWalk()
 	end
 end)
+
+speedButtons["x1"].MouseButton1Click:Connect(function()
+	WalkSpeed = 16
+	for _,b in pairs(speedButtons) do b.BackgroundColor3 = Color3.fromRGB(70,70,70) end
+	speedButtons["x1"].BackgroundColor3 = Color3.fromRGB(60,180,75)
+end)
+
+speedButtons["x2"].MouseButton1Click:Connect(function()
+	WalkSpeed = 32
+	for _,b in pairs(speedButtons) do b.BackgroundColor3 = Color3.fromRGB(70,70,70) end
+	speedButtons["x2"].BackgroundColor3 = Color3.fromRGB(60,180,75)
+end)
+
+speedButtons["x3"].MouseButton1Click:Connect(function()
+	WalkSpeed = 48
+	for _,b in pairs(speedButtons) do b.BackgroundColor3 = Color3.fromRGB(70,70,70) end
+	speedButtons["x3"].BackgroundColor3 = Color3.fromRGB(60,180,75)
+end)
+
+-- Minimize button
+minimize.MouseButton1Click:Connect(function()
+	isMinimized = not isMinimized
+	if isMinimized then
+		for _, obj in ipairs(frame:GetChildren()) do
+			if obj ~= title and obj ~= minimize and obj ~= close then
+				obj.Visible = false
+			end
+		end
+		frame.Size = UDim2.new(0, 200, 0, 35)
+	else
+		for _, obj in ipairs(frame:GetChildren()) do
+			obj.Visible = true
+		end
+		frame.Size = UDim2.new(0, 200, 0, 160)
+	end
+end)
+
+-- Close button
+close.MouseButton1Click:Connect(function()
+	gui:Destroy()
+	stopWalk()
+end)
+
+-- Default speed highlight
+speedButtons["x1"].BackgroundColor3 = Color3.fromRGB(60,180,75)

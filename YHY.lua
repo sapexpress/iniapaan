@@ -1,3 +1,4 @@
+
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
@@ -697,20 +698,6 @@ speedButton.MouseButton1Click:Connect(function()
 	speedLabel.Text = "Speed: x" .. speedMultiplier
 end)
 
---// FUNGSI CARI POSISI TERDEKAT
-local function getClosestIndex()
-	local minDist = math.huge
-	local closestIndex = 1
-	for i, cf in ipairs(path) do
-		local dist = (hrp.Position - cf.Position).Magnitude
-		if dist < minDist then
-			minDist = dist
-			closestIndex = i
-		end
-	end
-	return closestIndex
-end
-
 --// AUTO WALK FUNCTION
 local function autoWalk()
 	if walking then return end
@@ -718,13 +705,9 @@ local function autoWalk()
 	startButton.Text = "⏸ Stop"
 	startButton.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
 
-	-- Cari posisi terdekat dengan pemain
-	local startIndex = getClosestIndex()
-	print("▶ Memulai dari titik ke-", startIndex)
-
-	for i = startIndex, #path do
+	for i, cframePos in ipairs(path) do
 		if not walking then break end
-		hrp.CFrame = path[i]
+		hrp.CFrame = cframePos
 		task.wait(1 / speedMultiplier)
 	end
 

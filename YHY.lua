@@ -1,10 +1,59 @@
+--[[ 
+🟢 AUTO WALK MOUNT SCRIPT
+Fitur:
+- Bergerak otomatis mengikuti daftar CFrame
+- Tombol GUI untuk Start/Stop
+- Pilihan kecepatan x1, x2, x3
+- Gerakan smooth (CFrame Lerp)
+]]
 
+-- ====== SETUP ======
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
 
---// DATA CFrame
-local path = {
+-- ====== GUI ======
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "AutoWalkMount"
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 200, 0, 130)
+frame.Position = UDim2.new(0.5, -100, 0.8, -65)
+frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+frame.Active = true
+frame.Draggable = true
+frame.BorderSizePixel = 0
+frame.BackgroundTransparency = 0.1
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 25)
+title.BackgroundTransparency = 1
+title.Text = "🏔️ Auto Walk Mount"
+title.TextColor3 = Color3.new(1,1,1)
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 18
+
+local startBtn = Instance.new("TextButton", frame)
+startBtn.Size = UDim2.new(1, -20, 0, 30)
+startBtn.Position = UDim2.new(0, 10, 0, 35)
+startBtn.Text = "▶ Start"
+startBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+startBtn.TextColor3 = Color3.new(1,1,1)
+startBtn.Font = Enum.Font.SourceSansBold
+startBtn.TextSize = 16
+startBtn.AutoButtonColor = true
+
+local speedBtn = Instance.new("TextButton", frame)
+speedBtn.Size = UDim2.new(1, -20, 0, 30)
+speedBtn.Position = UDim2.new(0, 10, 0, 75)
+speedBtn.Text = "Speed x1"
+speedBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 200)
+speedBtn.TextColor3 = Color3.new(1,1,1)
+speedBtn.Font = Enum.Font.SourceSansBold
+speedBtn.TextSize = 16
+
+-- ====== CONFIG PATH ======
+local Path = {
 	CFrame.new(-955.338256835938, 171.881652832031, 890.158752441406) * CFrame.Angles(1.00199002872614e-07, -0.284080892801285, 2.65458233172922e-08),
 	CFrame.new(-955.338256835938, 171.881652832031, 890.158752441406) * CFrame.Angles(8.92665408258608e-09, -0.284080892801285, 2.36491493055269e-09),
 	CFrame.new(-955.338256835938, 171.881652832031, 890.158752441406) * CFrame.Angles(-6.6954953581444e-08, -0.284080892801285, -1.77385306443512e-08),
@@ -629,100 +678,47 @@ local path = {
 	CFrame.new(-416.908752441406, 251.048553466797, 788.10693359375) * CFrame.Angles(-4.79625157367991e-08, -3.12587141990662, -1.86541129210127e-08),
 }
 
---// VARIABEL
-local walking = false
 local speedMultiplier = 1
+local walking = false
 
---// GUI SETUP
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "AutoWalkUI"
-gui.ResetOnSpawn = false
-
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 220, 0, 130)
-frame.Position = UDim2.new(0.05, 0, 0.3, 0)
-frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-frame.Active = true
-frame.Draggable = true
-frame.BorderSizePixel = 0
-frame.BackgroundTransparency = 0.1
-
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, 0, 0, 25)
-title.Text = "🏔 Auto Walk Mountain"
-title.BackgroundTransparency = 1
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Font = Enum.Font.GothamBold
-title.TextSize = 16
-
-local startButton = Instance.new("TextButton", frame)
-startButton.Size = UDim2.new(0.9, 0, 0, 30)
-startButton.Position = UDim2.new(0.05, 0, 0.3, 0)
-startButton.Text = "▶ Start"
-startButton.Font = Enum.Font.GothamBold
-startButton.TextSize = 18
-startButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-startButton.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
-startButton.AutoButtonColor = true
-startButton.BorderSizePixel = 0
-startButton.BackgroundTransparency = 0.1
-startButton.UICorner = Instance.new("UICorner", startButton)
-
-local speedLabel = Instance.new("TextLabel", frame)
-speedLabel.Size = UDim2.new(1, 0, 0, 20)
-speedLabel.Position = UDim2.new(0, 0, 0.65, 0)
-speedLabel.Text = "Speed: x1"
-speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-speedLabel.BackgroundTransparency = 1
-speedLabel.Font = Enum.Font.Gotham
-speedLabel.TextSize = 14
-
-local speedButton = Instance.new("TextButton", frame)
-speedButton.Size = UDim2.new(0.9, 0, 0, 30)
-speedButton.Position = UDim2.new(0.05, 0, 0.8, 0)
-speedButton.Text = "Change Speed"
-speedButton.Font = Enum.Font.GothamBold
-speedButton.TextSize = 16
-speedButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-speedButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-speedButton.BorderSizePixel = 0
-speedButton.UICorner = Instance.new("UICorner", speedButton)
-
---// SPEED SYSTEM
-local speeds = {1, 2, 3}
-local speedIndex = 1
-speedButton.MouseButton1Click:Connect(function()
-	speedIndex += 1
-	if speedIndex > #speeds then speedIndex = 1 end
-	speedMultiplier = speeds[speedIndex]
-	speedLabel.Text = "Speed: x" .. speedMultiplier
+-- ====== BUTTON FUNCTION ======
+speedBtn.MouseButton1Click:Connect(function()
+	if speedMultiplier == 1 then
+		speedMultiplier = 2
+		speedBtn.Text = "Speed x2"
+	elseif speedMultiplier == 2 then
+		speedMultiplier = 3
+		speedBtn.Text = "Speed x3"
+	else
+		speedMultiplier = 1
+		speedBtn.Text = "Speed x1"
+	end
 end)
 
---// AUTO WALK FUNCTION
-local function autoWalk()
-	if walking then return end
-	walking = true
-	startButton.Text = "⏸ Stop"
-	startButton.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-
-	for i, cframePos in ipairs(path) do
-		if not walking then break end
-		hrp.CFrame = cframePos
-		task.wait(1 / speedMultiplier)
-	end
-
-	walking = false
-	startButton.Text = "▶ Start"
-	startButton.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
-end
-
---// START / STOP BUTTON
-startButton.MouseButton1Click:Connect(function()
+startBtn.MouseButton1Click:Connect(function()
+	walking = not walking
 	if walking then
-		walking = false
-		startButton.Text = "▶ Start"
-		startButton.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+		startBtn.Text = "⏹ Stop"
+		startBtn.BackgroundColor3 = Color3.fromRGB(180, 60, 60)
+		task.spawn(function()
+			for _, targetCFrame in ipairs(Path) do
+				if not walking then break end
+				local distance = (hrp.Position - targetCFrame.Position).Magnitude
+				local duration = (distance / 10) / speedMultiplier -- 10 = kecepatan dasar
+				local startCFrame = hrp.CFrame
+
+				for t = 0, 1, task.wait() / duration do
+					if not walking then break end
+					hrp.CFrame = startCFrame:Lerp(targetCFrame, t)
+				end
+				task.wait(0.1)
+			end
+			walking = false
+			startBtn.Text = "▶ Start"
+			startBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+		end)
 	else
-		autoWalk()
+		startBtn.Text = "▶ Start"
+		startBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
 	end
 end)

@@ -1,20 +1,23 @@
 --[[ 
-🟢 AUTO WALK MOUNT SCRIPT
+🏔️ AUTO WALK MOUNT SMOOTH v2
 Fitur:
-- Bergerak otomatis mengikuti daftar CFrame
-- Tombol GUI untuk Start/Stop
-- Pilihan kecepatan x1, x2, x3
-- Gerakan smooth (CFrame Lerp)
+- Gerakan smooth menggunakan TweenService
+- GUI Start/Stop dan Speed Control (x1, x2, x3)
+- Bisa digunakan untuk karakter atau mount (seat vehicle)
 ]]
 
 -- ====== SETUP ======
-local player = game.Players.LocalPlayer
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
+local humanoid = char:WaitForChild("Humanoid")
 
 -- ====== GUI ======
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "AutoWalkMount"
+gui.Name = "AutoWalkSmooth"
 
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0, 200, 0, 130)
@@ -23,12 +26,12 @@ frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 frame.Active = true
 frame.Draggable = true
 frame.BorderSizePixel = 0
-frame.BackgroundTransparency = 0.1
+frame.BackgroundTransparency = 0.15
 
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0, 25)
 title.BackgroundTransparency = 1
-title.Text = "🏔️ Auto Walk Mount"
+title.Text = "🏃 Auto Walk Mount"
 title.TextColor3 = Color3.new(1,1,1)
 title.Font = Enum.Font.SourceSansBold
 title.TextSize = 18
@@ -41,7 +44,6 @@ startBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
 startBtn.TextColor3 = Color3.new(1,1,1)
 startBtn.Font = Enum.Font.SourceSansBold
 startBtn.TextSize = 16
-startBtn.AutoButtonColor = true
 
 local speedBtn = Instance.new("TextButton", frame)
 speedBtn.Size = UDim2.new(1, -20, 0, 30)
@@ -675,13 +677,52 @@ local Path = {
 	CFrame.new(-416.908020019531, 251.048522949219, 788.102844238281) * CFrame.Angles(-9.40584996556026e-08, -3.12586998939514, 7.26939362039047e-08),
 	CFrame.new(-416.908752441406, 251.048553466797, 788.10693359375) * CFrame.Angles(-8.08599835977475e-08, -3.12587141990662, 4.65387763881608e-08),
 	CFrame.new(-416.908752441406, 251.048553466797, 788.10693359375) * CFrame.Angles(-6.43936743927043e-08, -3.12587141990662, 1.39074920468829e-08),
-	CFrame.new(-416.908752441406, 251.048553466797, 788.10693359375) * CFrame.Angles(-4.79625157367991e-08, -3.12587141990662, -1.86541129210127e-08),
+	CFrame.new(-416.908752441406, 251.048553466797, 788.10693359375) * CFrame.Angles(-4.79625157367991e-08, -3.12587141990662, -1.86541129210127e-08)
 }
 
 local speedMultiplier = 1
 local walking = false
 
--- ====== BUTTON FUNCTION ======
+-- ====== FUNGSI ======
+local function tweenToCFrame(targetCFrame)
+	local distance = (hrp.Position - targetCFrame.Position).Magnitude
+	local baseSpeed = 16 -- kecepatan dasar lari humanoid
+	local duration = (distance / baseSpeed) / speedMultiplier
+
+	local tween = TweenService:Create(hrp, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
+		CFrame = targetCFrame
+	})
+	tween:Play()
+	return tween
+end
+
+local function startWalking()
+	walking = true
+	startBtn.Text = "⏹ Stop"
+	startBtn.BackgroundColor3 = Color3.fromRGB(180, 60, 60)
+
+	humanoid:Move(Vector3.new(), false) -- pastikan idle dulu
+	humanoid.WalkSpeed = 16 * speedMultiplier
+
+	for i, target in ipairs(Path) do
+		if not walking then break end
+
+		-- Arahkan karakter ke target
+		local lookAt = CFrame.new(hrp.Position, target.Position)
+		hrp.CFrame = CFrame.new(hrp.Position, lookAt.LookVector * 1000)
+
+		local tween = tweenToCFrame(target)
+		tween.Completed:Wait()
+
+		task.wait(0.1)
+	end
+
+	walking = false
+	startBtn.Text = "▶ Start"
+	startBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+end
+
+-- ====== BUTTON EVENTS ======
 speedBtn.MouseButton1Click:Connect(function()
 	if speedMultiplier == 1 then
 		speedMultiplier = 2
@@ -693,32 +734,15 @@ speedBtn.MouseButton1Click:Connect(function()
 		speedMultiplier = 1
 		speedBtn.Text = "Speed x1"
 	end
+	humanoid.WalkSpeed = 16 * speedMultiplier
 end)
 
 startBtn.MouseButton1Click:Connect(function()
-	walking = not walking
 	if walking then
-		startBtn.Text = "⏹ Stop"
-		startBtn.BackgroundColor3 = Color3.fromRGB(180, 60, 60)
-		task.spawn(function()
-			for _, targetCFrame in ipairs(Path) do
-				if not walking then break end
-				local distance = (hrp.Position - targetCFrame.Position).Magnitude
-				local duration = (distance / 10) / speedMultiplier -- 10 = kecepatan dasar
-				local startCFrame = hrp.CFrame
-
-				for t = 0, 1, task.wait() / duration do
-					if not walking then break end
-					hrp.CFrame = startCFrame:Lerp(targetCFrame, t)
-				end
-				task.wait(0.1)
-			end
-			walking = false
-			startBtn.Text = "▶ Start"
-			startBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
-		end)
-	else
+		walking = false
 		startBtn.Text = "▶ Start"
 		startBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+	else
+		task.spawn(startWalking)
 	end
 end)
